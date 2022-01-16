@@ -123,8 +123,7 @@ public class CourierLoginTest {
 
         try {
 
-            String registerRequestBody = "{\"login\":\"" + loginPass.get(0) + "\","
-                    + "\"password\":\"" + "" + "\"}";
+            String registerRequestBody = "{\"login\":\"" + loginPass.get(0) + "\"}";
 
             response = given()
                     .header("Content-type", "application/json")
