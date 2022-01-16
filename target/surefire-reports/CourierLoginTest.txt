@@ -1,14 +1,11 @@
 -------------------------------------------------------------------------------
 Test set: CourierLoginTest
 -------------------------------------------------------------------------------
-Tests run: 4, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 65.046 s <<< FAILURE! - in CourierLoginTest
-postCourierLoginWithoutPasswordField(CourierLoginTest)  Time elapsed: 61.769 s  <<< ERROR!
-java.lang.IllegalStateException: 
-Expected response body to be verified as JSON, HTML or XML but no content-type was defined in the response.
-Try registering a default parser using:
-   RestAssured.defaultParser(<parser type>);
-Content was:
-Service unavailable
+Tests run: 4, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 64.849 s <<< FAILURE! - in CourierLoginTest
+postCourierLoginWithoutPassword(CourierLoginTest)  Time elapsed: 61.811 s  <<< FAILURE!
+java.lang.AssertionError: 
+1 expectation failed.
+Expected status code <404> but was <504>.
 
-	at CourierLoginTest.postCourierLoginWithoutPasswordField(CourierLoginTest.java:134)
+	at CourierLoginTest.postCourierLoginWithoutPassword(CourierLoginTest.java:77)
 

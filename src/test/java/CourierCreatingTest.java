@@ -1,145 +1,61 @@
 import io.qameta.allure.Description;
-import io.qameta.allure.Step;
-import io.restassured.RestAssured;
-import io.restassured.response.Response;
+import io.qameta.allure.junit4.DisplayName;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.DisplayName;
 
-import static io.restassured.RestAssured.*;
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.*;
 
 public class CourierCreatingTest {
+    public CourierClient courierClient;
+    public int courierId;
 
     @Before
     public void setUp() {
-        RestAssured.baseURI = "https://qa-scooter.praktikum-services.ru";
+        courierClient = new CourierClient();
+    }
+
+    @After
+    public void tearDown(){
+        if(courierId != 0) {
+            courierClient.delete(courierId);
+        }
     }
 
     @Test
     @DisplayName("post courier create")
     @Description("Check creating courier api/v1/courier")
     public void postCourierCreate() {
-        String login = "AlenaTestLogin";
-        String password = "1234";
+        Courier courier = Courier.getRandom();
+        CourierClient courierClient = new CourierClient();
 
-        Response response = null;
-        try {
-            String registerRequestBody = "{\"login\":\"" + login + "\","
-                    + "\"password\":\"" + password + "\","
-                    + "\"firstName\":\"" + "testFristName" + "\"}";
+        boolean isCreated = courierClient.create(courier);
+        courierId = courierClient.login(CourierCredentials.getCourierCredentials(courier));
 
-            response = given()
-                    .header("Content-type", "application/json")
-                    .and()
-                    .body(registerRequestBody)
-                    .when()
-                    .post("/api/v1/courier");
-            response.then().assertThat().body("ok", equalTo(true))
-                    .and()
-                    .statusCode(201);
-        } finally {
-            if (response.statusCode() == 201){
-                deleteCourier(login, password);
-            }        }
-
+        assertTrue("true", isCreated);
     }
 
     @Test
     @DisplayName("post courier duplicate")
     @Description("Check creating courier duplicate api/v1/courier")
     public void postCourierDuplicate() {
-        String login = "AlenaTestLogin";
-        String password = "1234";
+        Courier courier = Courier.getRandom();
 
-        Response response = null;
-        try {
-            String registerRequestBody = "{\"login\":\"" + login + "\","
-                    + "\"password\":\"" + password + "\","
-                    + "\"firstName\":\"" + "testFristName" + "\"}";
+        boolean isCreated = courierClient.create(courier);
+        courierId = courierClient.login(CourierCredentials.getCourierCredentials(courier));
+        String isCreatedDuplicate = courierClient.createDuplicate(courier);
 
-            response = given()
-                    .header("Content-type", "application/json")
-                    .and()
-                    .body(registerRequestBody)
-                    .when()
-                    .post("/api/v1/courier");
-            response.then().assertThat().body("ok", equalTo(true))
-                    .and()
-                    .statusCode(201);
-
-            Response responseDuplicate = given()
-                    .header("Content-type", "application/json")
-                    .and()
-                    .body(registerRequestBody)
-                    .when()
-                    .post("/api/v1/courier");
-            responseDuplicate.then().assertThat().body("message", equalTo("Этот логин уже используется. Попробуйте другой."))
-                    .and()
-                    .statusCode(409);
-        } finally {
-            if (response.statusCode() == 201){
-                deleteCourier(login, password);
-            }
-        }
-
+        assertTrue("true", isCreated);
+        assertEquals("Этот логин уже используется. Попробуйте другой.", isCreatedDuplicate);
     }
 
     @Test
     @DisplayName("post courier without one field")
     @Description("Check creating courier without one field api/v1/courier")
     public void postCourierWithoutOneField() {
-        String login = "AlenaTestLogin";
-        String password = "";
+        Courier courier = Courier.getEmptyPassword();
 
-        Response response = null;
-        try {
-
-            String registerRequestBody = "{\"login\":\"" + login + "\","
-                    + "\"password\":\"" + password + "\","
-                    + "\"firstName\":\"" + "testFristName" + "\"}";
-
-            response = given()
-                    .header("Content-type", "application/json")
-                    .and()
-                    .body(registerRequestBody)
-                    .when()
-                    .post("/api/v1/courier");
-            response.then().assertThat().body("message", equalTo("Недостаточно данных для создания учетной записи"))
-                    .and()
-                    .statusCode(400);
-        }finally {
-            if (response.statusCode() == 201){
-                deleteCourier(login, password);
-            }        }
-    }
-
-    @Step("deleting courier ")
-    public void deleteCourier(String login, String password) {
-        String loginRequestBody = "{\"login\":\"" + login + "\","
-                + "\"password\":\"" + password + "\"}";
-
-        Response response2 = given()
-                .header("Content-type", "application/json")
-                .and()
-                .body(loginRequestBody)
-                .when()
-                .post("/api/v1/courier/login");
-
-        response2.then().statusCode(200);
-
-        int id = response2.path("id");
-        String idString = Integer.toString(id);
-
-        String deleteRequestBody = "{\"id\":\"" + id + "\"}";
-
-        Response response3 = given()
-                .header("Content-type", "application/json")
-                .and()
-                .body(deleteRequestBody)
-                .when()
-                .delete("/api/v1/courier/" + idString);
-
-        response3.then().statusCode(200);
+        String isCreated = courierClient.createWithEmptyField(courier);
+        assertEquals("Недостаточно данных для создания учетной записи", isCreated);
     }
 }
